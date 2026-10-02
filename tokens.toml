@@ -228,41 +228,52 @@ nerd_requires_opt_in = true
 [glyphs.set]
 # `nerd` provenance, so a wrong character here is traceable rather than guessed:
 #
+#  * Private Use Area codepoints are written as \uXXXX escapes, not as literal
+#    characters. A literal PUA glyph in a diff is unreviewable, and a literal one
+#    was silently mangled once already (check became a Powerline divider).
 #  * Codicons (prefix `nf-cod-`) live at ea60-ec84 and Nerd Fonts do NOT relocate
 #    them, so those codepoints are stable across patched font versions.
-#  * Box Drawing (2500-259f) is also unpatched, so a Nerd Font and a plain
-#    Unicode terminal render the same character. For those keys `nerd` equals
-#    `unicode` deliberately, not because nobody filled it in.
-#  * A Nerd Font contains every ordinary Unicode character, so any key without a
-#    better icon keeps its Unicode character rather than becoming tofu.
+#  * Box Drawing (2500-259f) is also unpatched, so a Nerd Font and a plain Unicode
+#    terminal render the same character. For those keys `nerd` equals `unicode`
+#    deliberately, and that is why it is a literal here.
 #
-# Reference: ryanoasis/nerd-fonts glyph sets and code points.
-box_tl   = { nerd = "┌", unicode = "┌", ascii = "+" }   # box drawing: nerd == unicode
-box_tr   = { nerd = "┐", unicode = "┐", ascii = "+" }
-box_bl   = { nerd = "└", unicode = "└", ascii = "+" }
-box_br   = { nerd = "┘", unicode = "┘", ascii = "+" }
-box_h    = { nerd = "─", unicode = "─", ascii = "-" }
-box_v    = { nerd = "│", unicode = "│", ascii = "|" }
-box_vl   = { nerd = "├", unicode = "├", ascii = "+" }
-box_vr   = { nerd = "┤", unicode = "┤", ascii = "+" }
-box_hv   = { nerd = "┼", unicode = "┼", ascii = "+" }
-bar_full = { nerd = "█", unicode = "█", ascii = "#" }
-bar_half = { nerd = "▌", unicode = "▌", ascii = "=" }
-bar_empty= { nerd = "░", unicode = "░", ascii = "." }
-check    = { nerd = "", unicode = "✓", ascii = "+" }        # nf-cod-check
-cross    = { nerd = "", unicode = "✗", ascii = "x" }        # nf-cod-close
-dot      = { nerd = "", unicode = "●", ascii = "*" }        # nf-cod-circle_filled
-dot_empty= { nerd = "", unicode = "○", ascii = "o" }        # nf-cod-circle
-rec      = { nerd = "", unicode = "●", ascii = "o" }        # nf-cod-sync
-arrow_up = { nerd = "", unicode = "↑", ascii = "^" }        # nf-cod-arrow_up
-arrow_dn = { nerd = "", unicode = "↓", ascii = "v" }        # nf-cod-arrow_down
-bullet   = { nerd = "•", unicode = "•", ascii = "*" }
-rule     = { nerd = "", unicode = "─", ascii = "-" }        # nf-cod-horizontal_rule
-ellipsis = { nerd = "", unicode = "…", ascii = "..." }      # nf-cod-ellipsis
-branch   = { nerd = "", unicode = "├─", ascii = "|-" }      # nf-cod-git_branch
-corner   = { nerd = "", unicode = "└─", ascii = "`-" }
-warn     = { nerd = "", unicode = "⚠", ascii = "!" }        # nf-cod-warning
-lock     = { nerd = "", unicode = "▣", ascii = "=" }        # nf-cod-lock
-tag      = { nerd = "", unicode = "#", ascii = "#" }        # nf-cod-tag
-caret        = { nerd = "", unicode = "▏", ascii = "|" }        # nf-cod-cursor
-marker_select= { nerd = "", unicode = "▸", ascii = "*" }        # nf-cod-list_selection
+# Reference: ryanoasis/nerd-fonts, glyph sets and code points.
+#
+# key -> nf-cod name (where one exists)
+#   check EAB2   cross EA76   dot EA71   dot_empty EABC   rec EA77
+#   arrow_up EAA1   arrow_dn EA9A   ellipsis EA7C   branch EC6F
+#   warn EA6C   lock EA75   tag EA66   caret EC5C   marker_select EB85
+#   rule EB07
+
+# box drawing and simple marks: unpatched ranges, so nerd == unicode by design
+box_tl   = { nerd = "\u250C", unicode = "┌", ascii = "+" }
+box_tr   = { nerd = "\u2510", unicode = "┐", ascii = "+" }
+box_bl   = { nerd = "\u2514", unicode = "└", ascii = "+" }
+box_br   = { nerd = "\u2518", unicode = "┘", ascii = "+" }
+box_h    = { nerd = "\u2500", unicode = "─", ascii = "-" }
+box_v    = { nerd = "\u2502", unicode = "│", ascii = "|" }
+box_vl   = { nerd = "\u251C", unicode = "├", ascii = "+" }
+box_vr   = { nerd = "\u2524", unicode = "┤", ascii = "+" }
+box_hv   = { nerd = "\u253C", unicode = "┼", ascii = "+" }
+bar_full = { nerd = "\u2588", unicode = "█", ascii = "#" }
+bar_half = { nerd = "\u258C", unicode = "▌", ascii = "=" }
+bar_empty= { nerd = "\u2591", unicode = "░", ascii = "." }
+bullet   = { nerd = "\u2022", unicode = "•", ascii = "*" }
+
+# status and controls: Codicons
+check    = { nerd = "\uEAB2", unicode = "✓", ascii = "+" }
+cross    = { nerd = "\uEA76", unicode = "✗", ascii = "x" }
+dot      = { nerd = "\uEA71", unicode = "●", ascii = "*" }
+dot_empty= { nerd = "\uEABC", unicode = "○", ascii = "o" }
+rec      = { nerd = "\uEA77", unicode = "●", ascii = "o" }
+arrow_up = { nerd = "\uEAA1", unicode = "↑", ascii = "^" }
+arrow_dn = { nerd = "\uEA9A", unicode = "↓", ascii = "v" }
+ellipsis = { nerd = "\uEA7C", unicode = "…", ascii = "..." }
+branch   = { nerd = "\uEC6F", unicode = "├─", ascii = "|-" }
+corner   = { nerd = "\uEC6F", unicode = "└─", ascii = "`-" }
+warn     = { nerd = "\uEA6C", unicode = "⚠", ascii = "!" }
+lock     = { nerd = "\uEA75", unicode = "▣", ascii = "=" }
+tag      = { nerd = "\uEA66", unicode = "#", ascii = "#" }
+caret        = { nerd = "\uEC5C", unicode = "▏", ascii = "|" }
+marker_select= { nerd = "\uEB85", unicode = "▸", ascii = "*" }
+rule     = { nerd = "\uEB07", unicode = "─", ascii = "-" }
