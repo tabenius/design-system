@@ -1,0 +1,251 @@
+# ragbaz terminal design tokens
+#
+# Derived from the web design system's single source of truth:
+#   library/public/assets/tokens.css
+# Nothing outside this file and themes.toml may contain a literal colour,
+# spacing step or glyph character.
+schema = "ragbaz.tokens/1"
+derived_from = "library/public/assets/tokens.css"
+
+[meta]
+rule = "surfaces ask for a role, never for a colour"
+assumption = "1 character cell is treated as 0.75rem (the space-3 step); the rem scale is converted to cells with this one assumption and nothing else"
+type_scale_ratio = 1.200
+
+# ---------------------------------------------------------------- scales ----
+
+[scale.space]
+# web: --space-0 .. --space-8 = 0, .25, .5, .75, 1, 1.5, 2, 3, 4 rem
+# terminal: cells
+cells = [0, 0, 1, 1, 1, 2, 3, 4, 5]
+rem   = ["0", "0.25rem", "0.5rem", "0.75rem", "1rem", "1.5rem", "2rem", "3rem", "4rem"]
+
+[scale.type]
+# A terminal's font size belongs to the user's terminal, not to a program.
+# The web type scale therefore maps to emphasis, not size.
+[[scale.type.steps]]
+name = "type--2"
+rem = "0.694rem"
+web_use = "table, caption, marginal"
+role = "caption"
+emphasis = "dim"
+
+[[scale.type.steps]]
+name = "type--1"
+rem = "0.833rem"
+web_use = "small text, code inline"
+role = "small"
+emphasis = "normal"
+
+[[scale.type.steps]]
+name = "type-0"
+rem = "1.000rem"
+web_use = "body"
+role = "body"
+emphasis = "normal"
+
+[[scale.type.steps]]
+name = "type-1"
+rem = "1.200rem"
+web_use = "emphasis, strong label"
+role = "strong"
+emphasis = "bold"
+
+[[scale.type.steps]]
+name = "type-2"
+rem = "1.440rem"
+web_use = "section title"
+role = "section"
+emphasis = "bold+ink.emphasis"
+
+[[scale.type.steps]]
+name = "type-3"
+rem = "1.728rem"
+web_use = "view title"
+role = "view"
+emphasis = "bold+reverse"
+
+[[scale.type.steps]]
+name = "type-4"
+rem = "2.074rem"
+web_use = "screen title"
+role = "screen"
+emphasis = "bold+reverse"
+
+[[scale.type.steps]]
+name = "type-5"
+rem = "2.488rem"
+web_use = "document opener"
+role = "document"
+emphasis = "bold+reverse"
+
+# ----------------------------------------------------------------- roles ----
+#
+# `web` names the token this role came from, so the correspondence is auditable
+# rather than asserted. Roles are semantic; a surface never names a colour.
+
+[[role]]
+name = "surface.page"
+kind = "surface"
+web = "--paper-page"
+use = "the main canvas behind everything"
+
+[[role]]
+name = "surface.inset"
+kind = "surface"
+web = "--paper-inset"
+use = "tables, plates, figure ground"
+
+[[role]]
+name = "surface.raise"
+kind = "surface"
+web = "--paper-raise"
+use = "code blocks, boxes, raised panels"
+
+[[role]]
+name = "surface.chrome"
+kind = "surface"
+web = "--paper-chrome"
+use = "header/status bars, view chrome"
+
+[[role]]
+name = "ink.emphasis"
+kind = "ink"
+web = "--ink-emphasis"
+use = "headings, selected row"
+
+[[role]]
+name = "ink.body"
+kind = "ink"
+web = "--ink-body"
+use = "running text"
+
+[[role]]
+name = "ink.muted"
+kind = "ink"
+web = "--ink-muted"
+use = "captions, margins, as-of markers, key hints"
+
+[[role]]
+name = "ink.faint"
+kind = "ink"
+web = "--ink-faint"
+use = "rules, ornaments, disabled"
+
+[[role]]
+name = "ink.invert"
+kind = "ink"
+web = "--ink-invert"
+use = "text on a dark fill"
+
+[[role]]
+name = "ink.link"
+kind = "ink"
+web = "--ink-link"
+use = "references; ochre, never a web blue"
+
+[[role]]
+name = "ink.code"
+kind = "ink"
+web = "--ink-code"
+use = "inline code, identifiers"
+
+[[role]]
+name = "edge.rule"
+kind = "edge"
+web = "--paper-rule"
+use = "hairlines, box borders"
+
+[[role]]
+name = "edge.control"
+kind = "edge"
+web = "--control-edge"
+use = "button and field borders"
+
+[[role]]
+name = "edge.focus"
+kind = "edge"
+web = "--focus-ring"
+use = "focus outline; must be visible on every theme"
+
+[[role]]
+name = "status.ok"
+kind = "status"
+use = "ok, passed, running"
+extends = "sylvae/color.py _STATUS_STYLES ok->green"
+
+[[role]]
+name = "status.warn"
+kind = "status"
+use = "unavailable, degraded, needs review"
+extends = "sylvae/color.py _STATUS_STYLES unavailable->yellow"
+
+[[role]]
+name = "status.error"
+kind = "status"
+use = "failed, error, broken"
+extends = "sylvae/color.py _STATUS_STYLES failed->red"
+
+[[role]]
+name = "status.info"
+kind = "status"
+use = "informational, in progress"
+
+[[role]]
+name = "status.pending"
+kind = "status"
+use = "planned, queued, not yet started"
+
+[[role]]
+name = "delta.added"
+kind = "delta"
+use = "diff additions"
+
+[[role]]
+name = "delta.removed"
+kind = "delta"
+use = "diff removals"
+
+[[role]]
+name = "delta.moved"
+kind = "delta"
+use = "diff moves, renames"
+
+# ---------------------------------------------------------------- glyphs ----
+#
+# One key, three renderings. Surfaces reference the key only. The resolver
+# narrows nerd -> unicode -> ascii by what the terminal advertises, and only
+# selects `nerd` when ui.nerd_font is explicitly true.
+
+[glyphs]
+policy = ["nerd", "unicode", "ascii"]
+default = "unicode"
+nerd_requires_opt_in = true
+
+[glyphs.set]
+box_tl   = { nerd = "",  unicode = "┌", ascii = "+" }
+box_tr   = { nerd = "",  unicode = "┐", ascii = "+" }
+box_bl   = { nerd = "",  unicode = "└", ascii = "+" }
+box_br   = { nerd = "",  unicode = "┘", ascii = "+" }
+box_h    = { nerd = "",  unicode = "─", ascii = "-" }
+box_v    = { nerd = "",  unicode = "│", ascii = "|" }
+box_vl   = { nerd = "",  unicode = "├", ascii = "+" }
+box_vr   = { nerd = "",  unicode = "┤", ascii = "+" }
+bar_full = { nerd = "",  unicode = "█", ascii = "#" }
+bar_half = { nerd = "",  unicode = "▌", ascii = "=" }
+bar_empty= { nerd = "",  unicode = "░", ascii = "." }
+check    = { nerd = "",  unicode = "✓", ascii = "+" }
+cross    = { nerd = "",  unicode = "✗", ascii = "x" }
+dot      = { nerd = "",  unicode = "●", ascii = "*" }
+dot_empty= { nerd = "",  unicode = "○", ascii = "o" }
+rec      = { nerd = "",  unicode = "●", ascii = "o" }
+arrow_up = { nerd = "",  unicode = "↑", ascii = "^" }
+arrow_dn = { nerd = "",  unicode = "↓", ascii = "v" }
+bullet   = { nerd = "",  unicode = "•", ascii = "*" }
+rule     = { nerd = "",  unicode = "─", ascii = "-" }
+ellipsis = { nerd = "",  unicode = "…", ascii = "..." }
+branch   = { nerd = "",  unicode = "├─", ascii = "|-" }
+corner   = { nerd = "",  unicode = "└─", ascii = "`-" }
+warn     = { nerd = "",  unicode = "⚠", ascii = "!" }
+lock     = { nerd = "",  unicode = "🔒", ascii = "=" }
+tag      = { nerd = "",  unicode = "#", ascii = "#" }

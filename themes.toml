@@ -1,0 +1,120 @@
+# ragbaz terminal themes
+#
+# Derived from the web system's themes (library/public/assets/themes.css:
+# sepia, white, night) plus the `mono` variant frog already ships
+# (frog/src/ragbaz_frog/tui.py `_THEMES`).
+#
+# A theme must define EVERY role listed in tokens.toml. A partial theme is a
+# configuration error, not a set of defaults: otherwise adding a role later
+# silently leaves one theme behind.
+schema = "ragbaz.themes/1"
+default_theme = "ragbaz"
+
+# ------------------------------------------------------------------ ragbaz ---
+# The printed-object palette: warm near-black ink on warm paper. Not #000 on
+# #fff, because pure black on pure white vibrates.
+[themes.ragbaz]
+description = "Warm sepia, the default; the printed-object palette"
+derived_from = "tokens.css defaults (html without data-theme)"
+background = "light"
+color_mode = "auto"
+
+[themes.ragbaz.role]
+"surface.page"   = "#fffdf8"
+"surface.inset"  = "#f7f2e7"
+"surface.raise"  = "#ffffff"
+"surface.chrome" = "#faf8f0"
+"ink.emphasis"   = "#17150f"
+"ink.body"       = "#2b2822"
+"ink.muted"      = "#6d6659"
+"ink.faint"      = "#a39a8b"
+"ink.invert"     = "#f6f2e9"
+"ink.link"       = "#7a4b12"
+"ink.code"       = "#234a63"
+"edge.rule"      = "#ded5c2"
+"edge.control"   = "#76776b"
+"edge.focus"     = "#91682c"
+"status.ok"      = "#3f6b2f"
+"status.warn"    = "#8a6412"
+"status.error"   = "#9b2c22"
+"status.info"    = "#234a63"
+"status.pending" = "#6d6659"
+"delta.added"    = "#3f6b2f"
+"delta.removed"  = "#9b2c22"
+"delta.moved"    = "#7a4b12"
+
+# ----------------------------------------------------------- ragbaz-night ---
+# For dark terminals. Ink is recomputed for a dark ground rather than reused:
+# the web ink ramp is tuned for dark-on-light and inverts badly.
+[themes.ragbaz-night]
+description = "Dark terminal counterpart of the ragbaz palette"
+derived_from = "html[data-theme=\"night\"]"
+background = "dark"
+color_mode = "auto"
+
+[themes.ragbaz-night.role]
+"surface.page"   = "#14130f"
+"surface.inset"  = "#1c1a15"
+"surface.raise"  = "#24211a"
+"surface.chrome" = "#1a1814"
+"ink.emphasis"   = "#f6f2e9"
+"ink.body"       = "#ddd7c8"
+"ink.muted"      = "#a39a8b"
+"ink.faint"      = "#6d6659"
+"ink.invert"     = "#17150f"
+"ink.link"       = "#d9a04a"
+"ink.code"       = "#8fb8d4"
+"edge.rule"      = "#3a362c"
+"edge.control"   = "#55524a"
+"edge.focus"     = "#d9a04a"
+"status.ok"      = "#8fbc6a"
+"status.warn"    = "#d9b44a"
+"status.error"   = "#e0705f"
+"status.info"    = "#8fb8d4"
+"status.pending" = "#a39a8b"
+"delta.added"    = "#8fbc6a"
+"delta.removed"  = "#e0705f"
+"delta.moved"    = "#d9a04a"
+
+# ---------------------------------------------------------- ragbaz-white ---
+[themes.ragbaz-white]
+description = "High-contrast light"
+derived_from = "html[data-theme=\"white\"]"
+background = "light"
+color_mode = "auto"
+
+[themes.ragbaz-white.role]
+"surface.page"   = "#ffffff"
+"surface.inset"  = "#f4f4f2"
+"surface.raise"  = "#ffffff"
+"surface.chrome" = "#fafafa"
+"ink.emphasis"   = "#000000"
+"ink.body"       = "#1a1a1a"
+"ink.muted"      = "#5c5c5c"
+"ink.faint"      = "#9a9a9a"
+"ink.invert"     = "#ffffff"
+"ink.link"       = "#5a3608"
+"ink.code"       = "#1b3d55"
+"edge.rule"      = "#d0d0d0"
+"edge.control"   = "#5a5a5a"
+"edge.focus"     = "#8a5a12"
+"status.ok"      = "#2f5d22"
+"status.warn"    = "#7a5600"
+"status.error"   = "#8c1f16"
+"status.info"    = "#1b3d55"
+"status.pending" = "#5c5c5c"
+"delta.added"    = "#2f5d22"
+"delta.removed"  = "#8c1f16"
+"delta.moved"    = "#5a3608"
+
+# -------------------------------------------------------------------- mono ---
+# Not a fallback. A first-class theme with no colour at all: bold, dim and
+# reverse only. This is the correct choice when output is piped, logged, or read
+# by someone who does not want colour -- and having it as a theme means the
+# honest choice does not require inventing a --no-color flag.
+[themes.mono]
+description = "No colour; bold, dim and reverse only"
+derived_from = "frog/src/ragbaz_frog/tui.py _THEMES[\"mono\"]"
+background = "any"
+color_mode = "never"
+roles_complete = false   # intentionally colourless: `none` for every role
