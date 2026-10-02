@@ -45,16 +45,24 @@ than a detail panel disappearing.
 
 ### Worked examples
 
-| terminal | chrome rows | nav | main | detail | note |
-|---|---|---|---|---|---|
-| 120×40 | 3 | 24 | 58 | 38 | all three panes |
-| 100×30 | 3 | 20 | 48 | 32 | all three panes |
-| 80×24 | 3 | 16 | 39 | 25 | all three panes, detail at its minimum |
-| 76×24 | 3 | 15 | 61 | — | detail dropped at the threshold |
-| 60×20 | 3 | 12 | 45 | — | detail dropped |
-| 40×12 | 3 | 12 | 25 | — | below this, nav collapses to a hint line |
+**Panes are adjacent.** No column is reserved for a gutter — separation is
+*drawn* with the box glyphs. Reserving gutter columns is the trap: the panes then
+sum to `width + gutters` and run off the right edge. The pane widths must sum to
+exactly `width`, and that is the check worth writing.
 
-Content height is always `height − 3`.
+| terminal | chrome rows | nav | main | detail | sum | note |
+|---|---|---|---|---|---|---|
+| 120×40 | 3 | 24 | 58 | 38 | 120 | all three panes |
+| 100×30 | 3 | 20 | 48 | 32 | 100 | all three panes |
+| 80×24 | 3 | 16 | 38 | 26 | 80 | detail near its minimum |
+| 76×24 | 3 | 15 | 37 | 24 | 76 | **threshold**: detail is the last thing to appear |
+| 75×24 | 3 | 15 | 60 | — | 75 | detail dropped at 76 |
+| 60×20 | 3 | 12 | 48 | — | 60 | detail dropped |
+| 40×12 | 3 | — | 40 | — | 40 | nav collapses to a hint line |
+
+Content height is always `height − 3`. Detail appears at `width ≥ 76` and is
+dropped below it; main has a floor of 20 columns, so detail is also dropped when
+keeping it would push main under that floor.
 
 ## Degradation ladder
 
