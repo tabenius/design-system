@@ -90,9 +90,23 @@ same rung for the same terminal.
 - Left: ` <view> `, the current view name.
 - Right: theme name, and the observation time.
 - Filler: `box_h` glyph in the same attributes, so the bar reads as continuous.
-- One `space.1` cell of padding at each end. Never zero padding on a reverse-video
-  bar — the reverse attribute is the surface, and text flush to the edge of it
-  looks broken.
+- **One whole cell** of padding at each end — `space.2`, which is the first step
+  of the scale that resolves to a whole cell. **Not `space.1`**: the scale is
+  converted from rem under one stated assumption, and `space.1` is 0.25rem,
+  which rounds to **0 cells**. A reverse-video bar with zero padding puts text
+  flush against the edge of the inverted region and looks broken.
+
+> This is a real trap in the scale rather than a typo in this document. Any
+> padding that must be visible needs a whole-cell step; `space.1` exists for
+> *hairline* offsets in the web system, not for terminal padding. Rounding to
+> zero is correct for a hairline and wrong for a margin.
+
+**One rule about reverse video.** Choose exactly one of the two ways to render a
+bar, never both: either set the reverse attribute, *or* paint the bar with an
+inverted foreground/background pair. Doing both inverts twice and lands you back
+on the original colours with a wasted attribute. This document specifies the
+attribute; the `ink.invert` on `surface.chrome` in the role table is the colour a
+renderer uses when it paints bars *without* the attribute.
 
 ### Status line — 1 row, `dim`, `ink.muted`
 
@@ -128,7 +142,10 @@ Two signals, always both:
 | signal | colour theme | mono |
 |---|---|---|
 | marker glyph in a gutter column | `ink.emphasis` | `*` glyph |
-| reverse video on the row | `ink.invert` on the row | reverse video |
+| the row itself | reverse video, or `ink.invert` on `surface.inset` — **one, not both** | reverse video |
+
+The marker glyph is the `marker_select` key (`▸` / `*`), not `dot`. Using `dot`
+for selection makes a selected row indistinguishable from a status dot.
 
 The gutter costs one column and buys the two things reverse video alone cannot:
 legibility when the terminal renders reverse poorly, and a signal that survives

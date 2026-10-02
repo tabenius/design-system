@@ -10,6 +10,9 @@ derived_from = "library/public/assets/tokens.css"
 [meta]
 rule = "surfaces ask for a role, never for a colour"
 assumption = "1 character cell is treated as 0.75rem (the space-3 step); the rem scale is converted to cells with this one assumption and nothing else"
+# NOTE: space.1 rounds to ZERO cells (0.25rem). That is right for a hairline and
+# wrong for terminal padding or any margin that must be visible. The first
+# whole-cell step is space.2. See docs/layout.md.
 type_scale_ratio = 1.200
 
 # ---------------------------------------------------------------- scales ----
@@ -223,29 +226,43 @@ default = "unicode"
 nerd_requires_opt_in = true
 
 [glyphs.set]
-box_tl   = { nerd = "",  unicode = "┌", ascii = "+" }
-box_tr   = { nerd = "",  unicode = "┐", ascii = "+" }
-box_bl   = { nerd = "",  unicode = "└", ascii = "+" }
-box_br   = { nerd = "",  unicode = "┘", ascii = "+" }
-box_h    = { nerd = "",  unicode = "─", ascii = "-" }
-box_v    = { nerd = "",  unicode = "│", ascii = "|" }
-box_vl   = { nerd = "",  unicode = "├", ascii = "+" }
-box_vr   = { nerd = "",  unicode = "┤", ascii = "+" }
-bar_full = { nerd = "",  unicode = "█", ascii = "#" }
-bar_half = { nerd = "",  unicode = "▌", ascii = "=" }
-bar_empty= { nerd = "",  unicode = "░", ascii = "." }
-check    = { nerd = "",  unicode = "✓", ascii = "+" }
-cross    = { nerd = "",  unicode = "✗", ascii = "x" }
-dot      = { nerd = "",  unicode = "●", ascii = "*" }
-dot_empty= { nerd = "",  unicode = "○", ascii = "o" }
-rec      = { nerd = "",  unicode = "●", ascii = "o" }
-arrow_up = { nerd = "",  unicode = "↑", ascii = "^" }
-arrow_dn = { nerd = "",  unicode = "↓", ascii = "v" }
-bullet   = { nerd = "",  unicode = "•", ascii = "*" }
-rule     = { nerd = "",  unicode = "─", ascii = "-" }
-ellipsis = { nerd = "",  unicode = "…", ascii = "..." }
-branch   = { nerd = "",  unicode = "├─", ascii = "|-" }
-corner   = { nerd = "",  unicode = "└─", ascii = "`-" }
-warn     = { nerd = "",  unicode = "⚠", ascii = "!" }
-lock     = { nerd = "",  unicode = "🔒", ascii = "=" }
-tag      = { nerd = "",  unicode = "#", ascii = "#" }
+# `nerd` provenance, so a wrong character here is traceable rather than guessed:
+#
+#  * Codicons (prefix `nf-cod-`) live at ea60-ec84 and Nerd Fonts do NOT relocate
+#    them, so those codepoints are stable across patched font versions.
+#  * Box Drawing (2500-259f) is also unpatched, so a Nerd Font and a plain
+#    Unicode terminal render the same character. For those keys `nerd` equals
+#    `unicode` deliberately, not because nobody filled it in.
+#  * A Nerd Font contains every ordinary Unicode character, so any key without a
+#    better icon keeps its Unicode character rather than becoming tofu.
+#
+# Reference: ryanoasis/nerd-fonts glyph sets and code points.
+box_tl   = { nerd = "┌", unicode = "┌", ascii = "+" }   # box drawing: nerd == unicode
+box_tr   = { nerd = "┐", unicode = "┐", ascii = "+" }
+box_bl   = { nerd = "└", unicode = "└", ascii = "+" }
+box_br   = { nerd = "┘", unicode = "┘", ascii = "+" }
+box_h    = { nerd = "─", unicode = "─", ascii = "-" }
+box_v    = { nerd = "│", unicode = "│", ascii = "|" }
+box_vl   = { nerd = "├", unicode = "├", ascii = "+" }
+box_vr   = { nerd = "┤", unicode = "┤", ascii = "+" }
+box_hv   = { nerd = "┼", unicode = "┼", ascii = "+" }
+bar_full = { nerd = "█", unicode = "█", ascii = "#" }
+bar_half = { nerd = "▌", unicode = "▌", ascii = "=" }
+bar_empty= { nerd = "░", unicode = "░", ascii = "." }
+check    = { nerd = "", unicode = "✓", ascii = "+" }        # nf-cod-check
+cross    = { nerd = "", unicode = "✗", ascii = "x" }        # nf-cod-close
+dot      = { nerd = "", unicode = "●", ascii = "*" }        # nf-cod-circle_filled
+dot_empty= { nerd = "", unicode = "○", ascii = "o" }        # nf-cod-circle
+rec      = { nerd = "", unicode = "●", ascii = "o" }        # nf-cod-sync
+arrow_up = { nerd = "", unicode = "↑", ascii = "^" }        # nf-cod-arrow_up
+arrow_dn = { nerd = "", unicode = "↓", ascii = "v" }        # nf-cod-arrow_down
+bullet   = { nerd = "•", unicode = "•", ascii = "*" }
+rule     = { nerd = "", unicode = "─", ascii = "-" }        # nf-cod-horizontal_rule
+ellipsis = { nerd = "", unicode = "…", ascii = "..." }      # nf-cod-ellipsis
+branch   = { nerd = "", unicode = "├─", ascii = "|-" }      # nf-cod-git_branch
+corner   = { nerd = "", unicode = "└─", ascii = "`-" }
+warn     = { nerd = "", unicode = "⚠", ascii = "!" }        # nf-cod-warning
+lock     = { nerd = "", unicode = "▣", ascii = "=" }        # nf-cod-lock
+tag      = { nerd = "", unicode = "#", ascii = "#" }        # nf-cod-tag
+caret        = { nerd = "", unicode = "▏", ascii = "|" }        # nf-cod-cursor
+marker_select= { nerd = "", unicode = "▸", ascii = "*" }        # nf-cod-list_selection

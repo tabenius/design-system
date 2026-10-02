@@ -23,6 +23,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import pathlib
+import shutil
+import subprocess
+import tempfile
 import sys
 import tomllib
 
@@ -247,7 +250,10 @@ def emit_rust(tokens: dict, themes: dict, digest: str) -> str:
         "impl ColorMode {",
         "    /// NO_COLOR off; FORCE_COLOR on and beats NO_COLOR; TERM=dumb off.",
         "    pub fn detect() -> Self {",
-        '        if std::env::var("RAGBAZ_NO_COLOR").is_ok() {',
+        '        // NO_COLOR is the standard and wins. RAGBAZ_NO_COLOR is honoured as',
+        "        // an explicit override so a box can pin it without touching the",
+        "        // environment every other tool reads.",
+        '        if std::env::var("NO_COLOR").is_ok() || std::env::var("RAGBAZ_NO_COLOR").is_ok() {',
         "            return Self::None;",
         "        }",
         '        if std::env::var("FORCE_COLOR").is_ok() {',
@@ -281,12 +287,29 @@ def emit_rust(tokens: dict, themes: dict, digest: str) -> str:
         "",
         "impl Set {",
         "    /// nerd is opt-in, never detected; then narrow unicode -> ascii.",
+        "    ///",
+        "    /// A Rust process cannot ask stdio what encoding it is, so this reads the",
+        "    /// locale. If nothing advertises UTF-8, a unicode glyph would be mojibake,",
+        "    /// so ASCII is the honest fallback rather than an unreachable variant.",
         "    pub fn detect() -> Self {",
         '        if std::env::var("RAGBAZ_NERD_FONT").is_ok() {',
         "            return Self::Nerd;",
         "        }",
-        "        Self::Unicode",
+        "        if locale_is_utf8() {",
+        "            Self::Unicode",
+        "        } else {",
+        "            Self::Ascii",
+        "        }",
         "    }",
+        "}",
+        "",
+        "/// True when the locale advertises UTF-8 in any of the usual variables.",
+        "pub fn locale_is_utf8() -> bool {",
+        '    ["LC_ALL", "LC_CTYPE", "LANG"].iter().any(|name| {',
+        "        std::env::var(name)",
+        '            .map(|v| v.to_ascii_uppercase().contains("UTF"))',
+        "            .unwrap_or(false)",
+        "    })",
         "}",
         "",
         "const ANSI16: [&str; 16] = [",
@@ -421,6 +444,13 @@ def main() -> int:
         OUT / "ragbaz_design.rs": emit_rust(tokens, themes, digest),
     }
 
+    # An adopting repo runs `cargo fmt --all --check` over the vendored file, and
+    # rustfmt.toml's `ignore` is nightly-only, so the emitted file must already be
+    # formatted. Hand it to rustfmt rather than hand-formatting it, and do the
+    # same in --check so the comparison is against what would actually be written.
+    rs_final = format_rust(targets[OUT / "ragbaz_design.rs"])
+    targets[OUT / "ragbaz_design.rs"] = rs_final
+
     stale = []
     for path, content in targets.items():
         current = path.read_text() if path.exists() else None
@@ -441,6 +471,24 @@ def main() -> int:
         print(f"{path.relative_to(HERE)}  {path.stat().st_size} bytes")
     print(f"source-digest {digest}")
     return 0
+
+
+def format_rust(content: str) -> str:
+    """rustfmt the emitted Rust in a temp file and return the formatted text."""
+    if not shutil.which("rustfmt"):
+        print("warning: rustfmt not found; the emitted Rust may fail `cargo fmt --check`",
+              file=sys.stderr)
+        return content
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = pathlib.Path(tmp) / "ragbaz_design.rs"
+        tmp_path.write_text(content)
+        done = subprocess.run(["rustfmt", "--edition", "2021", str(tmp_path)],
+                              capture_output=True, text=True)
+        if done.returncode != 0:
+            print(f"warning: rustfmt failed ({done.stderr.strip()[:200]}); "
+                  "emitting unformatted", file=sys.stderr)
+            return content
+        return tmp_path.read_text()
 
 
 if __name__ == "__main__":
