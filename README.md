@@ -77,13 +77,41 @@ themes.toml          theme list; each theme maps roles -> colours
 README.md            this file
 docs/
   configuration.md   four-layer config, provenance, --config-out
+  layout.md          the frame: regions, pane widths, degradation ladder
   git-browser-tui.md git access/rendering options, SelectionBus interop
   signing.md         key registry, four key kinds, minisign translation warning,
                      x509 entries carry no trust rule by default
+skills/
+  ragbaz-design-language/    the language: tokens, themes, glyphs, bindings, frame
+  ragbaz-renderer-adapter/   adapting one or more renderers to it
 examples/
   tokens.py          resolve a theme, run the colour fallback ladder, print provenance
   legend.py          data-driven, paginated hotkey legend
 ```
+
+## Adopting it
+
+Two skills, and they are written to be used by other skills:
+
+| skill | for |
+|---|---|
+| `ragbaz-design-language` | the language itself — the invariants, the roles, which colour to ask for, and the six behaviours a conformant renderer provides |
+| `ragbaz-renderer-adapter` | the ordered procedure for bringing a renderer (curses, ratatui, Textual, plain ANSI, anything) up to those six behaviours, plus the conformance checks |
+
+```bash
+# a renderer conforms when it provides these six, and nothing more is required
+# of the toolkit:
+#   1 layout(width, height) -> regions      the frame + degradation ladder
+#   2 resolve(role, colour_mode) -> bytes   truecolor -> ansi256 -> ansi16 -> none
+#   3 glyph(key) -> str                     narrowed nerd -> unicode -> ascii
+#   4 bindings() -> table                   one table, shared with the legend
+#   5 resolve_key(key, editing) -> action   with field-scope precedence
+#   6 truncate(text, width) -> str          escape- and width-safe
+```
+
+That is the point of keeping this separate from any toolkit: a renderer adopts
+six behaviours, and curses, ratatui and Textual can each satisfy them without
+being forced to resemble each other in the pixels.
 
 ## Tokens
 
@@ -208,8 +236,45 @@ because bindings carry a `view`.
 
 Arrow keys and `hjkl` are always live **except inside a text field**, where the
 dispatch switches to readline semantics (`C-a`/`C-e`/`C-w`/`C-d`, `Y`, `W`, …).
-That exception must be a single `is_editing` predicate in the key dispatcher, not
-a special case in each view.
+That exception is expressed as one `scope` per binding — `global` / `view` /
+`nav` / `field` — and one predicate in the dispatcher, not a special case in every
+view. `nav` is suppressed while a field has focus and `field` goes live, and where
+both claim a key **the field wins**.
+
+That precedence is not academic: capital `W` is both the global *snapshot config*
+and readline's *kill to end of line*, and without field precedence the global
+silently eats the readline binding. `examples/legend.py` asserts it.
+
+## The frame
+
+`docs/layout.md` fixes enough structure that different toolkits render surfaces
+that read as one product, without pretending they are the same product:
+
+```
+ row 0        ┌ title bar — 1 row, bold+reverse ────────────────────────────┐
+ rows 1..n-2  │ nav │ main table                    │ detail              │
+ row n-2      │ status line — 1 row, dim                                 │
+ row n-1      │ legend strip — 1 row, dim                                 │
+```
+
+- **Chrome heights are counts, not percentages** — title 1, status 1, legend 1;
+  only content flexes. A renderer that computes chrome as a fraction of height
+  will not line up with one that counts rows.
+- Pane widths come from the space scale with stated clamps: nav 20% `[12,24]`,
+  detail 40% of the remainder `[24,48]`, main the rest (min 20).
+- A **degradation ladder** as a pure function of `(width, height)`: drop detail
+  below 76 columns, collapse nav below 52, drop the legend strip below 10 rows,
+  merge status into the title bar below 6, and refuse below 4 rather than render
+  a garbled frame.
+- **Selection is two signals** — a marker glyph in a gutter column *and* reverse
+  video. Reverse alone disappears when a terminal renders it poorly, and vanishes
+  entirely in a log.
+- **No meaning by colour alone.** Status is glyph + word + colour, always. This is
+  what makes `mono` a real theme rather than a broken one, and it is why
+  configuration provenance has to be *text* and not merely a dimmer colour.
+
+The goal is **identical chrome, different content**: frog's board, nostoi's chain
+browser and rebekah's console do different jobs and should not share a layout.
 
 ## Configuration
 
@@ -267,5 +332,6 @@ Where each piece comes from, so nobody writes it twice:
 | terminal styling | `nostoi/src/tui.rs`, `weftmark/src/weftmark/tui/` | port palettes to tokens |
 
 The honest summary: ratatui, Textual and curses each keep their own rendering,
-and that is fine — the reconciliation happens at the **token, theme, glyph and
-binding** layer, not by forcing one widget toolkit on the fleet.
+and that is fine. The reconciliation happens at the **token, theme, glyph,
+binding and frame** layer, not by forcing one widget toolkit on the fleet — same
+house, different pixels; identical chrome, different content.
