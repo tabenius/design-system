@@ -13,6 +13,14 @@ conform by implementing six behaviours; none of them needs to change toolkit.
 
 ## The files
 
+> **Repo root:** this skill lives at
+> `~/src/ragbaz/design-system/skills/<name>/`. Every path below is relative to
+> **that repository root**, which is two directories above this file — not to the
+> working directory, and not to wherever this skill happens to be symlinked from.
+> Resolve `tokens.toml`, `docs/layout.md` and `examples/` against the repository
+> root, or you will read the wrong file (or nothing).
+
+
 Read these before writing any styling code. They are the source of truth, and a
 renderer that hardcodes a colour or a box-drawing character has violated the
 system, not merely missed a preference.

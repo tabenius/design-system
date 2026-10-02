@@ -9,7 +9,15 @@ Procedure for bringing a terminal renderer into conformance with the
 `ragbaz-design-language` skill. Read that skill first — it holds the invariants
 and the token semantics. This skill holds the order of work and the traps.
 
-Adapt **one or more** renderers in one pass when several surfaces must match each
+Adapt **one or more** renderers in one pass
+
+> **Repo root:** this skill lives at
+> `~/src/ragbaz/design-system/skills/<name>/`. Every path below is relative to
+> **that repository root**, which is two directories above this file — not to the
+> working directory, and not to wherever this skill happens to be symlinked from.
+> Resolve `tokens.toml`, `docs/layout.md` and `examples/` against the repository
+> root, or you will read the wrong file (or nothing).
+ when several surfaces must match each
 other; the token binding work is shared and only the frame differs.
 
 ## The one thing you must not do
