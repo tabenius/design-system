@@ -6,10 +6,22 @@ from the existing ragbaz web design system rather than invented beside it.
 This is where the fleet's TUIs and CLIs stop each inventing their own colours,
 glyphs, help boxes and spacing, and start reading one token file.
 
-> **Status: proposal.** The token files here are real and the example scripts run
-> against them, but no production surface consumes them yet. The three design
-> documents under [`docs/`](docs/) are decisions to be made, several of which are
-> still open. Nothing here is committed to any other repository.
+**Status: adopted by two surfaces, specified for the rest.** The token files are
+the source of truth; the language modules under [`generated/`](generated/) are a
+projection of them that other repositories vendor, so nothing outside this
+repository holds a copy of a design decision.
+
+| surface | toolkit | state |
+|---|---|---|
+| [`ragbaz-tui`](../ragbaz-tui) | curses | conformant; the worked example |
+| [`nostoi`](https://github.com/tabenius/nostoi) `src/tui.rs` | ratatui | conformant |
+| [`frog`](../frog) `src/ragbaz_frog/tui.py` | curses | pending |
+| `weftmark` | Textual | pending |
+
+The documents under [`docs/`](docs/) are decisions, several of which are still
+open. Where a document and the code disagreed, that was a bug in the document and
+it was corrected — twice, both times after a renderer proved it wrong by
+implementing it.
 
 ## Why this exists
 
@@ -74,7 +86,12 @@ indent steps in the spacing scale.
 ```
 tokens.toml          the token file: roles, scales, glyph policy   <- source of truth
 themes.toml          theme list; each theme maps roles -> colours
-README.md            this file
+generate.py          compiles the tokens into per-language modules
+generated/
+  ragbaz_design.py   vendored by a Python surface
+  ragbaz_design.rs   vendored by a Rust surface
+tests/
+  test_generated.py  pins the generated modules and the glyph codepoints
 docs/
   configuration.md   four-layer config, provenance, --config-out
   layout.md          the frame: regions, pane widths, degradation ladder
@@ -113,6 +130,46 @@ That is the point of keeping this separate from any toolkit: a renderer adopts
 six behaviours, and curses, ratatui and Textual can each satisfy them without
 being forced to resemble each other in the pixels.
 
+## Consuming the tokens from another repository
+
+A surface in another repository cannot import `tokens.toml` across a checkout
+boundary, and stdlib-only projects like frog will not take a runtime dependency
+on a sibling directory they may never see. So the tokens are **compiled** into one
+dependency-free module per language, which a surface vendors:
+
+```bash
+python3 generate.py            # write generated/ragbaz_design.{py,rs}
+python3 generate.py --check    # exit 1 if stale - use this in CI
+```
+
+| language | module | vendored as |
+|---|---|---|
+| Python | `generated/ragbaz_design.py` | e.g. frog's `src/ragbaz_frog/_design.py` |
+| Rust | `generated/ragbaz_design.rs` | e.g. nostoi's `src/design.rs` |
+
+Both carry the **source digest** of `tokens.toml` + `themes.toml` in their header,
+so a vendored copy is traceable to the exact tokens it came from, and
+`--check` proves it is not stale.
+
+Three rules for a vendored copy:
+
+1. **Never hand-edit it.** It is a projection, and an edit is lost at the next
+   regeneration.
+2. **Keep the provenance banner** recording the digest, so a re-vendor is a
+   deliberate act.
+3. **Verify it is `rustfmt`-clean** (`cargo fmt --all --check` in an adopting repo
+   covers the vendored file, and `rustfmt.toml`'s `ignore` is nightly-only). The
+   generator formats its own output, so this is free — but a hand-tidied copy
+   breaks it.
+
+The **colour ladder is computed, never stored**: the generator emits hex and each
+language derives `nearest256`/`nearest16` at runtime. Storing a 256-index table
+here would guarantee the Python and Rust ladders drift apart.
+
+**Layout is deliberately not generated.** The frame is a grammar each renderer
+implements in its own toolkit — that is the whole point of keeping the
+reconciliation above the renderers.
+
 ## Tokens
 
 `tokens.toml` is the machine-readable form of everything above.
@@ -137,8 +194,15 @@ extends a convention rather than replacing it.
 ### Spacing
 
 `space.0` … `space.8`, straight from `--space-0..8`: `0, .25, .5, .75, 1, 1.5,
-2, 3, 4` rem. In a terminal these are **cell counts**: `space.3` is one column of
-padding, `space.6` is two. `examples/tokens.py --spacing` prints the ladder.
+2, 3, 4` rem, converted to **cell counts** under one stated assumption: 1 cell is
+the `space-3` step. `examples/tokens.py --spacing` prints the ladder.
+
+> **`space.1` rounds to zero cells** (0.25rem). That is correct for a hairline and
+> wrong for anything that must be visible. The first whole-cell step is
+> **`space.2`**. This is a real trap: an early version of `docs/layout.md`
+> demanded "one `space.1` cell of padding, never zero" on the title bar, which is
+> a contradiction rather than a preference. Padding and margins take `space.2`
+> and above.
 
 ## Colour
 
@@ -198,6 +262,19 @@ The policy is `nerd → unicode → ascii`, narrowed by what the terminal actual
 advertises. `remote-android/.../tui/theme.py` already ships `UNICODE_GLYPHS` and
 `ASCII_GLYPHS` dicts with `_utf8_ok()` detection, and that narrowing logic is the
 model — it just needs a third tier above it and a setting to opt into `nerd`.
+
+**Nerd codepoints are written as `\uXXXX` escapes, never as literal characters.**
+A literal Private Use Area glyph in a diff is unreviewable, and one was silently
+mangled once already. Provenance is recorded per key in `tokens.toml`: Codicons
+(`nf-cod-*`, `ea60`–`ec84`) are not relocated by the patched fonts so those
+codepoints are stable across versions; Box Drawing (`2500`–`259f`) is also
+unpatched, so for those keys `nerd` equals `unicode` deliberately, and that is why
+it is a literal.
+
+`caret` and `marker_select` were added after the first renderers reported having
+no key for a text edit caret or for the selection gutter — the latter matters,
+because using `dot` for selection makes a selected row indistinguishable from a
+status dot.
 
 ### The nerd-font checkbox
 
@@ -293,6 +370,30 @@ ragbaz --config-out=$HOME/snap.toml      # complete, annotated snapshot
 `--config-out` writes every key at its effective value annotated with where it
 came from, and never merges into the live configuration — so snapshotting a box
 for an SBOM cannot mutate it.
+
+## Verification
+
+```bash
+python3 tests/test_generated.py   # 10 assertions, no dependencies
+```
+
+These are not smoke tests. They exist because of specific failures:
+
+- **`test_nerd_codepoints_match_the_font_tables`** pins all 15 named icons to their
+  verified codepoints. The nerd column was once filled with literal Private Use
+  Area characters and a later edit silently mangled several: `check` became
+  U+E0A2, a Powerline divider, instead of U+EAB2, a Codicon tick. Nothing
+  noticed, because a glyph table has no expected values to compare against.
+- **`test_box_drawing_nerd_equals_unicode`** asserts the unpatched `2500`–`259f`
+  range is identical in both sets, so a future omission looks different from the
+  deliberate choice it is.
+- **`test_emitted_rust_is_rustfmt_clean`** and
+  **`test_emitted_rust_narrows_to_ascii`** guard the two ways the emitted module
+  used to be wrong in a way only an adopting repo would notice.
+- **`test_space_scale_zero_cell_step_is_documented`** keeps `layout.md` and the
+  scale honest with each other.
+- **`test_role_table_is_complete_in_every_theme`** makes a partial theme a test
+  failure rather than a runtime surprise.
 
 ## Examples
 
