@@ -12,11 +12,12 @@ and the token semantics. This skill holds the order of work and the traps.
 Adapt **one or more** renderers in one pass
 
 > **Repo root:** this skill lives at
-> `~/src/ragbaz/design-system/skills/<name>/`. Every path below is relative to
-> **that repository root**, which is two directories above this file — not to the
+> `<design-system>/skills/<name>/`. Every path below is relative to **that
+> repository root**, which is two directories above this file — not to the
 > working directory, and not to wherever this skill happens to be symlinked from.
-> Resolve `tokens.toml`, `docs/layout.md` and `examples/` against the repository
-> root, or you will read the wrong file (or nothing).
+> Resolve the root from this file (two levels up); the workspace has moved more
+> than once. Resolve `tokens.toml`, `docs/layout.md` and `examples/` against the
+> repository root, or you will read the wrong file (or nothing).
  when several surfaces must match each
 other; the token binding work is shared and only the frame differs.
 

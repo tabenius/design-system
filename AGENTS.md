@@ -12,20 +12,35 @@ Two rules matter more than anything else here:
    something, record the gap in the surface's own repository. Do not fork the
    palette.
 
+This repository also hosts the fleet's **skills wire** (below). `generated/`
+compiles the token files into vendorable modules; `skills/` carries agent-facing
+conventions. Neither is design-system domain content beyond the terminal — a
+skill here covers one concern and points at whoever owns the code.
+
 ## Skills
 
-Two skills, standard `SKILL.md` frontmatter, loadable like any other. They are
-written to be used **by other skills** as well as by people.
+Three skills, standard `SKILL.md` frontmatter, loadable like any other. They are
+written to be used **by other skills** as well as by people. Symlink each one
+into `~/.claude/skills/`, `~/.codex/skills/` and `~/.config/opencode/skills/`
+from this repository, so no tool holds a fork. **Resolve paths inside a skill
+from the skill file** — two directories up is this repository's root, and it has
+moved more than once.
 
 | skill | path | use it for |
 |---|---|---|
 | `ragbaz-design-language` | [`skills/ragbaz-design-language/SKILL.md`](skills/ragbaz-design-language/SKILL.md) | the language itself: the invariants, which role to ask for, the type→emphasis mapping, and the six behaviours a conformant renderer provides |
 | `ragbaz-renderer-adapter` | [`skills/ragbaz-renderer-adapter/SKILL.md`](skills/ragbaz-renderer-adapter/SKILL.md) | adapting **one or more** renderers (curses, ratatui, Textual, bubbletea, plain ANSI, anything) to those six behaviours, plus the conformance checks and the traps |
+| `ragbaz-component-model` | [`skills/ragbaz-component-model/SKILL.md`](skills/ragbaz-component-model/SKILL.md) | WIT worlds and WASI Preview-2 components: cross-cutting concerns as imported interfaces, pull-based liveness, observability as an import, and version discipline |
+
+A skill that covers a concern this repository does not own names the owning
+repository and restates none of its contracts. `ragbaz-component-model` owns no
+WIT file: the worlds live in `nostoi/` and `BAZ.AI-Governance/`.
 
 Read `ragbaz-design-language` first. Use `ragbaz-renderer-adapter` whenever the
 task involves bringing an actual surface into the system — it has the order of
 work, and skipping to step 4 is how surfaces end up with pretty colours and a
-stale legend.
+stale legend. Use `ragbaz-component-model` before editing a WIT world or world
+`import`/`export` list.
 
 A renderer conforms by providing six behaviours. Nothing more is asked of the
 toolkit, which is why different toolkits can conform without resembling each
