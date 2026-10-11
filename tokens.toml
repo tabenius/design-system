@@ -200,6 +200,26 @@ kind = "status"
 use = "planned, queued, not yet started"
 
 [[role]]
+name = "priority.p0"
+kind = "priority"
+use = "critical, highest urgency"
+
+[[role]]
+name = "priority.p1"
+kind = "priority"
+use = "high urgency"
+
+[[role]]
+name = "priority.p2"
+kind = "priority"
+use = "medium urgency"
+
+[[role]]
+name = "priority.p3"
+kind = "priority"
+use = "low urgency"
+
+[[role]]
 name = "delta.added"
 kind = "delta"
 use = "diff additions"
